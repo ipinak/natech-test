@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Natech.Caas.API.Dtos;
 using Natech.Caas.API.Request;
-using Natech.Caas.API.Services;
+using Natech.Caas.Core.Services;
+using Natech.Caas.Dtos;
 
 namespace Natech.Caas.API.Controllers;
 
@@ -9,9 +9,9 @@ namespace Natech.Caas.API.Controllers;
 [Route("api/cats")]
 public class CatController : ControllerBase
 {
-  private readonly CatService _catService;
+  private readonly ICatService _catService;
 
-  public CatController(CatService catUseCase)
+  public CatController(ICatService catUseCase)
   {
     _catService = catUseCase;
   }
@@ -49,12 +49,7 @@ public class CatController : ControllerBase
   [ProducesResponseType(typeof(string), 500, contentType: "application/text")]
   public async Task<ActionResult<IEnumerable<CatDto>>> List([FromQuery] ListCatsRequest request)
   {
-    var (cats, totalCount) = await _catService.ListCats(request);
-    return Ok(new ListResponse<CatDto>
-    {
-      TotalCount = totalCount,
-      Page = request.Page,
-      Data = cats,
-    });
+    var listCatsResponse = await _catService.ListCats(request.Tag, request.Page, request.PageSize);
+    return Ok(listCatsResponse);
   }
 }

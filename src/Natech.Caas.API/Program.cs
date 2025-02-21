@@ -3,82 +3,88 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Natech.Caas.API;
-using Natech.Caas.API.Database;
-using Natech.Caas.API.Database.Repository;
-using Natech.Caas.API.Services;
-using Natech.Caas.API.TheCatApiClient;
+using Natech.Caas.API.Extensions;
 using Natech.Caas.API.Validators;
+using Natech.Caas.Core.Services;
+using Natech.Caas.Database;
+using Natech.Caas.Database.Repository;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+public partial class Program
+{
+    private static void Main(string[] args)
     {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    });
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCatApi(builder.Configuration);
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        builder.Services.AddCatApi(builder.Configuration);
 
-Console.WriteLine($"🔌 Connection String: {connectionString}");
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var isIntegrationTesting = builder.Environment.IsEnvironment(Consts.INTEGRATION_TESTING);
-if (isIntegrationTesting)
-{
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseInMemoryDatabase("TestDb"));
-}
-else
-{
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-}
+        Console.WriteLine($"🔌 Connection String: {connectionString}");
 
-builder.Services.AddScoped<ICatRepository, CatRepository>();
-builder.Services.AddScoped<ITagRepository, TagRepository>();
-builder.Services.AddScoped<CatService>();
+        var isIntegrationTesting = builder.Environment.IsEnvironment(Consts.INTEGRATION_TESTING);
+        if (isIntegrationTesting)
+        {
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseInMemoryDatabase("TestDb"));
+        }
+        else
+        {
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        }
 
-builder.Services.AddTransient<IDownloader, ImageDownloadService>(sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
+        builder.Services.AddScoped<ICatRepository, CatRepository>();
+        builder.Services.AddScoped<ITagRepository, TagRepository>();
+        builder.Services.AddScoped<ICatService, CatService>();
 
-builder.Services.AddValidators();
+        builder.Services.AddTransient<IDownloader, ImageDownloadService>(sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
 
-var app = builder.Build();
+        builder.Services.AddValidators();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+        var app = builder.Build();
 
-app.UseStaticFiles();
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), Consts.DOWNLOADS_FOLDER)),
-    RequestPath = $"/{Consts.DOWNLOADS_FOLDER}",
-});
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
-app.UseRouting();
-app.MapControllers();
+        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), Consts.DOWNLOADS_FOLDER)),
+            RequestPath = $"/{Consts.DOWNLOADS_FOLDER}",
+        });
 
-app.UseHttpsRedirection();
+        app.UseRouting();
+        app.MapControllers();
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-builder.Configuration.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
+        app.UseHttpsRedirection();
 
-if (!isIntegrationTesting)
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Database.Migrate();
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        builder.Configuration.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
+
+        if (!isIntegrationTesting)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                dbContext.Database.Migrate();
+            }
+        }
+
+        app.Run();
     }
 }
-
-app.Run();
 
 public partial class Program { }

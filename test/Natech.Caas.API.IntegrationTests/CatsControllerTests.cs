@@ -7,9 +7,9 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Bogus;
 using Microsoft.Extensions.DependencyInjection;
-using Natech.Caas.API.Database;
-using Natech.Caas.API.Database.Entities;
-using Natech.Caas.API.Dtos;
+using Natech.Caas.Database;
+using Natech.Caas.Database.Entities;
+using Natech.Caas.Dtos;
 
 public class CatsControllerTests : BaseTest
 {
@@ -252,7 +252,7 @@ public class CatsControllerTests : BaseTest
     }
 
     [Test]
-    public async Task ListCats_ShouldReturnCats_WhenTagDoeNotMatch1()
+    public async Task ListCats_ShouldReturnCats_WhenNoTagIsProvided()
     {
         // Arrange
         using var scope = _factory.Services.CreateScope();
@@ -279,19 +279,19 @@ public class CatsControllerTests : BaseTest
         await dbContext.SaveChangesAsync();
 
         // Act
-        var response3 = await _client.GetAsync($"/api/cats");
+        var response = await _client.GetAsync($"/api/cats");
 
         // Assert
-        response3.EnsureSuccessStatusCode();
+        response.EnsureSuccessStatusCode();
 
-        var response3Payload = await response3.Content.ReadAsStringAsync();
-        var catResponse3 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response3Payload, new JsonSerializerOptions
+        var responsePayload = await response.Content.ReadAsStringAsync();
+        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         });
 
-        Assert.That(catResponse3.Data.Count(), Is.EqualTo(0));
+        Assert.That(catResponse.Data.Count(), Is.EqualTo(3));
     }
     #endregion
 

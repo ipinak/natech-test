@@ -24,6 +24,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Natech.Caas.API\Natech.Caas.API.csproj" />
+    <ProjectReference Include="..\..\src\Natech.Caas.Database\Natech.Caas.Database.csproj" />
+    <ProjectReference Include="..\..\src\Natech.Caas.Dtos\Natech.Caas.Dtos.csproj" />
   </ItemGroup>
+
+  <Target Name="EnsureDownloadsFolderExists" BeforeTargets="BeforeBuild">
+    <Exec Command="mkdir -p $(OutDir)downloads" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Exec Command="mkdir -p $(OutDir)/downloads" Condition=" '$(OS)' != 'Windows_NT' " />
+  </Target>
 
 </Project>
