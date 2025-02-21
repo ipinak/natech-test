@@ -32,7 +32,7 @@ public class CatController : ControllerBase
   [ProducesResponseType(typeof(CatDto), 200, contentType: "application/json")]
   [ProducesResponseType(typeof(string), 400, contentType: "application/text")]
   [ProducesResponseType(typeof(string), 500, contentType: "application/text")]
-  public async Task<ActionResult<CatDto>> Get(GetCatRequest request)
+  public async Task<ActionResult<CatDto>> Get([FromRoute] GetCatRequest request)
   {
     var response = await _catService.GetCat(request.Id);
     if (response == null)
@@ -47,14 +47,9 @@ public class CatController : ControllerBase
   [ProducesResponseType(typeof(IEnumerable<CatDto>), 200, contentType: "application/json")]
   [ProducesResponseType(typeof(string), 400, contentType: "application/text")]
   [ProducesResponseType(typeof(string), 500, contentType: "application/text")]
-  public async Task<ActionResult<IEnumerable<CatDto>>> List(ListCatsRequest request)
+  public async Task<ActionResult<IEnumerable<CatDto>>> List([FromQuery] ListCatsRequest request)
   {
     var (cats, totalCount) = await _catService.ListCats(request);
-    if (cats == null)
-    {
-      return NotFound("No cats found");
-    }
-
     return Ok(new ListResponse<CatDto>
     {
       TotalCount = totalCount,

@@ -3,9 +3,9 @@ using Natech.Caas.API.Request;
 
 namespace Natech.Caas.API.Validators;
 
-public class GetCatValidator : AbstractValidator<GetCatRequest>
+public class GetCatRequestValidator : AbstractValidator<GetCatRequest>
 {
-  public GetCatValidator()
+  public GetCatRequestValidator()
   {
     RuleFor(x => x.Id)
       .NotEmpty()

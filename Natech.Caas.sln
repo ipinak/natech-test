@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B36C5674-9F5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Natech.Caas.API", "src\Natech.Caas.API\Natech.Caas.API.csproj", "{FE2911DA-A1F8-4AA5-A024-855F7E203CDA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E6461562-26CB-4387-AF7B-1F74A4FC7CBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Natech.Caas.API.IntegrationTests", "test\Natech.Caas.API.IntegrationTests\Natech.Caas.API.IntegrationTests.csproj", "{20F5B06D-F4AF-4B1D-AA15-86886243A66E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,13 @@ Global
 		{FE2911DA-A1F8-4AA5-A024-855F7E203CDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE2911DA-A1F8-4AA5-A024-855F7E203CDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE2911DA-A1F8-4AA5-A024-855F7E203CDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20F5B06D-F4AF-4B1D-AA15-86886243A66E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20F5B06D-F4AF-4B1D-AA15-86886243A66E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20F5B06D-F4AF-4B1D-AA15-86886243A66E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20F5B06D-F4AF-4B1D-AA15-86886243A66E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FE2911DA-A1F8-4AA5-A024-855F7E203CDA} = {B36C5674-9F5A-426D-BABD-E4EC517F41F2}
+		{20F5B06D-F4AF-4B1D-AA15-86886243A66E} = {E6461562-26CB-4387-AF7B-1F74A4FC7CBD}
 	EndGlobalSection
 EndGlobal

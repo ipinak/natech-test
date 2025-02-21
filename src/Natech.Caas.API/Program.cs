@@ -1,16 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Natech.Caas.API;
 using Natech.Caas.API.Database;
+using Natech.Caas.API.Database.Repository;
 using Natech.Caas.API.Services;
 using Natech.Caas.API.TheCatApiClient;
 using Natech.Caas.API.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers()
@@ -21,13 +21,30 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddCatApi(builder.Configuration);
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddTransient<IDownloader, ImageDownloadService>(sp => new ImageDownloadService("downloads"));
-builder.Services.AddTransient<CatService>();
-builder.Services.AddProblemDetails();
-builder.Services.AddValidatorsFromAssemblyContaining<ListCatValidator>();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+Console.WriteLine($"🔌 Connection String: {connectionString}");
+
+var isIntegrationTesting = builder.Environment.IsEnvironment(Consts.INTEGRATION_TESTING);
+if (isIntegrationTesting)
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("TestDb"));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
+
+builder.Services.AddScoped<ICatRepository, CatRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<CatService>();
+
+builder.Services.AddTransient<IDownloader, ImageDownloadService>(sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
+
+builder.Services.AddValidators();
 
 var app = builder.Build();
 
@@ -38,6 +55,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), Consts.DOWNLOADS_FOLDER)),
+    RequestPath = $"/{Consts.DOWNLOADS_FOLDER}",
+});
+
 app.UseRouting();
 app.MapControllers();
 
@@ -46,12 +70,14 @@ app.UseHttpsRedirection();
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
 
-using (var scope = app.Services.CreateScope())
+if (!isIntegrationTesting)
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.Migrate();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.Migrate();
+    }
 }
-
 
 app.Run();
 

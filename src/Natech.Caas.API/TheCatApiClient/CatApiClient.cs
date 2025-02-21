@@ -7,7 +7,7 @@ namespace Natech.Caas.API.TheCatApiClient;
 // TODO: move this ot a separate file
 public interface ITheCatApiClient
 {
-  Task<CatImageResponse[]> GetRandomCatImages();
+  Task<CatImage[]> GetRandomCatImages();
 }
 
 public class CatApiClient : ITheCatApiClient
@@ -35,7 +35,7 @@ public class CatApiClient : ITheCatApiClient
   /// Get 
   /// </summary>
   /// <returns></returns>
-  public async Task<CatImageResponse[]> GetRandomCatImages()
+  public async Task<CatImage[]> GetRandomCatImages()
   {
     try
     {
@@ -45,17 +45,17 @@ public class CatApiClient : ITheCatApiClient
       if (!response.IsSuccessStatusCode)
       {
         _logger.LogError("Failed to fetch with code {0}", response.StatusCode);
-        return Array.Empty<CatImageResponse>();
+        return Array.Empty<CatImage>();
       }
 
       string json = await response.Content.ReadAsStringAsync();
-      var cats = JsonSerializer.Deserialize<CatImageResponse[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-      return cats?.Length > 0 ? cats : Array.Empty<CatImageResponse>();
+      var cats = JsonSerializer.Deserialize<CatImage[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+      return cats?.Length > 0 ? cats : Array.Empty<CatImage>();
     }
     catch (Exception ex)
     {
       _logger.LogError("Failed to fetch with code {0}", ex.Message);
-      return Array.Empty<CatImageResponse>();
+      return Array.Empty<CatImage>();
     }
   }
 }

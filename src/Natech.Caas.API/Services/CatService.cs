@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
-using Natech.Caas.API.Database;
 using Natech.Caas.API.Database.Entities;
 using Natech.Caas.API.Dtos;
 using Natech.Caas.API.Extensions;
+using Natech.Caas.API.Database.Repository;
 using Natech.Caas.API.Request;
 using Natech.Caas.API.TheCatApiClient;
 
@@ -10,18 +9,21 @@ namespace Natech.Caas.API.Services;
 
 public class CatService
 {
-  private readonly ApplicationDbContext _dbContext;
   private readonly ITheCatApiClient _catApiClient;
   private readonly IDownloader _downloader;
+  private readonly ICatRepository _catRepository;
+  private readonly ITagRepository _tagRepository;
 
   public CatService(
-    ApplicationDbContext dbContext,
+    ICatRepository catRepository,
+    ITagRepository tagRepository,
     ITheCatApiClient theCatApiClient,
     IDownloader downloader)
   {
-    _dbContext = dbContext;
     _catApiClient = theCatApiClient;
     _downloader = downloader;
+    _catRepository = catRepository;
+    _tagRepository = tagRepository;
   }
 
   /// <summary>
@@ -34,7 +36,7 @@ public class CatService
     foreach (var c in cats)
     {
       var fileName = $"{Guid.NewGuid()}{Utils.GetFileExtension(c.Url)}";
-      // await _downloader.Download(c.Url, fileName);
+      await _downloader.Download(c.Url, fileName);
 
       var catEntity = new CatEntity
       {
@@ -46,14 +48,12 @@ public class CatService
         Tags = new List<TagEntity>()
       };
 
-      _dbContext.Cats.Add(catEntity);
+      await _catRepository.Add(catEntity);
 
       var tags = ExtractTags(c.Breeds);
 
       // Fetch existing tags
-      var existingTags = await _dbContext.Tags
-          .Where(t => tags.Contains(t.Name))
-          .ToListAsync();
+      var existingTags = await _tagRepository.List(tags);
 
       // Find only tags except the ones that match by name
       var newTags = tags.Except(existingTags.Select(t => t.Name), StringComparer.OrdinalIgnoreCase)
@@ -63,8 +63,7 @@ public class CatService
       // Add new tags to the database
       if (newTags.Any())
       {
-        _dbContext.Tags.AddRange(newTags);
-        await _dbContext.SaveChangesAsync();
+        await _tagRepository.AddAll(newTags);
       }
 
       // Merge existing and newly created tags
@@ -72,9 +71,8 @@ public class CatService
 
       // Assign tags to the cat
       catEntity.Tags.AddRange(allTags);
+      await _catRepository.Update(catEntity);
     }
-
-    await _dbContext.SaveChangesAsync();
   }
 
   static IEnumerable<string> ExtractTags(IEnumerable<Breed> breeds)
@@ -84,9 +82,7 @@ public class CatService
 
   public async Task<CatDto> GetCat(int id)
   {
-    // TODO: add result, error tuple
-    var result = await _dbContext.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == id);
-
+    var result = await _catRepository.GetByIdAsync(id);
     return result?.ToDto();
   }
 
@@ -98,31 +94,8 @@ public class CatService
     var page = request.Page < 1 ? 1 : request.Page;
     var pageSize = request.Page < 1 ? 10 : request.PageSize;
 
-    var query = _dbContext.Cats
-        .Include(c => c.Tags)
-        .AsQueryable();
-
-    if (!string.IsNullOrEmpty(request.Tag))
-    {
-      query = query.Where(c => c.Tags.Any(t => t.Name == request.Tag));
-    }
-
-    var totalCount = await query.CountAsync();
-    var cats = await query
-        .Skip(CalculateSkip(page, pageSize))
-        .Take(pageSize)
-        .ToListAsync();
-
-    if (totalCount <= 0)
-    {
-      return (Array.Empty<CatDto>(), 0);
-    }
+    var (cats, totalCount) = await _catRepository.ListAsync(request.Tag, request.Page, request.PageSize);
 
     return (cats.Select(c => c.ToDto()), totalCount);
-  }
-
-  private static int CalculateSkip(int page, int pageSize)
-  {
-    return (page - 1) * pageSize;
   }
 }

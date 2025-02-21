@@ -10,7 +10,6 @@ services:
     environment:
       ACCEPT_EULA: "1"
       SA_PASSWORD: "YourStrong!Passw0rd"
-      
     volumes:
       - sqlserver_data:/var/opt/mssql
 
@@ -19,6 +18,16 @@ services:
     restart: always
     ports:
       - 8080:8080
+
+  app:
+    build: ./src/Natech.Caas.API
+    container_name: natech-api
+    ports:
+      - "8082:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=azuresqledge,1433;Database=NatechTestDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
 
 volumes:
   sqlserver_data:

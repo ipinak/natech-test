@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Natech.Caas.API.TheCatApiClient;
 
-public class CatImageResponse
+public class CatImage
 {
   [JsonPropertyName("id")]
   public string Id { get; set; }

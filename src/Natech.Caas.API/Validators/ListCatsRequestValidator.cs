@@ -3,9 +3,9 @@ using Natech.Caas.API.Request;
 
 namespace Natech.Caas.API.Validators;
 
-public class ListCatValidator : AbstractValidator<ListCatsRequest>
+public class ListCatsRequestValidator : AbstractValidator<ListCatsRequest>
 {
-  public ListCatValidator()
+  public ListCatsRequestValidator()
   {
     RuleFor(x => x.Page)
       .GreaterThanOrEqualTo(1)
