@@ -75,7 +75,7 @@ public class CatService
     }
   }
 
-  static IEnumerable<string> ExtractTags(IEnumerable<Breed> breeds)
+  private static IEnumerable<string> ExtractTags(IEnumerable<Breed> breeds)
   {
     return breeds.SelectMany(b => b.Temperament.Split(", "));
   }
@@ -88,7 +88,7 @@ public class CatService
 
   public async Task<(IEnumerable<CatDto> Cats, int TotalCount)> ListCats(ListCatsRequest request)
   {
-    request.ThrowIfNull("ListCatRequest object is null");
+    request.ThrowIfNull("ListCatsRequest object is null");
 
     // TODO: don't use this validation
     var page = request.Page < 1 ? 1 : request.Page;
