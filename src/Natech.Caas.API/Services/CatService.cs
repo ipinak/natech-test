@@ -13,17 +13,23 @@ public class CatService
   private readonly IDownloader _downloader;
   private readonly ICatRepository _catRepository;
   private readonly ITagRepository _tagRepository;
+  private readonly string _host;
 
   public CatService(
+    IConfiguration configuration,
     ICatRepository catRepository,
     ITagRepository tagRepository,
     ITheCatApiClient theCatApiClient,
     IDownloader downloader)
   {
+    configuration.ThrowIfNull("Configuration is null");
+
     _catApiClient = theCatApiClient;
     _downloader = downloader;
     _catRepository = catRepository;
     _tagRepository = tagRepository;
+
+    _host = configuration.GetSection("Kestrel:Endpoints:Http:Url").Value;
   }
 
   /// <summary>
@@ -43,7 +49,7 @@ public class CatService
         CatId = c.Id,
         Width = c.Width,
         Height = c.Height,
-        Image = $"/downloads/{fileName}",
+        Image = $"{_host}/downloads/{fileName}",
         Created = DateTime.UtcNow,
         Tags = new List<TagEntity>()
       };
