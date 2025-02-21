@@ -8,16 +8,16 @@ public class ListCatValidator : AbstractValidator<ListCatsRequest>
   public ListCatValidator()
   {
     RuleFor(x => x.Page)
-        .GreaterThanOrEqualTo(1)
+      .GreaterThanOrEqualTo(1)
         .WithMessage("Page must be at least 1.");
     RuleFor(x => x.PageSize)
-        .InclusiveBetween(1, 25)
+      .InclusiveBetween(1, 25)
         .WithMessage("PageSize must be between 1 and 25.");
     RuleFor(x => x.Tag)
-        .MinimumLength(3)
+      .MinimumLength(3)
         .When(x => !string.IsNullOrEmpty(x.Tag))
         .WithMessage("Tag must be at least 3 characters long.")
-        .MaximumLength(50)
+      .MaximumLength(50)
         .WithMessage("Tag must be at most 50 characters long.");
   }
 }

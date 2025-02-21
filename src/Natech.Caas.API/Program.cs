@@ -1,9 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Natech.Caas.API.Database;
 using Natech.Caas.API.Services;
 using Natech.Caas.API.TheCatApiClient;
+using Natech.Caas.API.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddTransient<IDownloader, ImageDownloadService>(sp => new ImageDownloadService("downloads"));
 builder.Services.AddTransient<CatService>();
 builder.Services.AddProblemDetails();
+builder.Services.AddValidatorsFromAssemblyContaining<ListCatValidator>();
 
 var app = builder.Build();
 
