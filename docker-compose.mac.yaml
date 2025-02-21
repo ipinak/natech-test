@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: azuresqledge
+    restart: always
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "1"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  sqlserver_data:
+    driver: local

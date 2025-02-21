@@ -1,0 +1,6 @@
+@Natech.Caas.API_HostAddress = http://localhost:5019
+
+GET {{Natech.Caas.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
