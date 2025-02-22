@@ -4,5 +4,5 @@ using Natech.Caas.TheCatApi.Dtos;
 
 public interface ITheCatApiClient
 {
-  Task<IEnumerable<CatImage>> GetRandomCatImagesAsync();
+  Task<IEnumerable<CatImage>> GetRandomCatImagesAsync(int limit = 25);
 }

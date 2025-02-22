@@ -48,12 +48,12 @@ public partial class Program
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
         }
-
+        builder.Services.AddHttpClient<ICatService, CatService>();
         builder.Services.AddScoped<ICatRepository, CatRepository>();
         builder.Services.AddScoped<ITagRepository, TagRepository>();
         builder.Services.AddScoped<ICatService, CatService>();
 
-        builder.Services.AddTransient<IDownloader, ImageDownloadService>(
+        builder.Services.AddSingleton<IDownloader, ImageDownloadService>(
             sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
 
         builder.Services.AddValidators();
@@ -90,6 +90,8 @@ public partial class Program
                 dbContext.Database.Migrate();
             }
         }
+
+        app.MapHealthChecks("/healthz");
 
         app.Run();
     }

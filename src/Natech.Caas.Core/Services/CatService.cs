@@ -22,14 +22,12 @@ public class CatService : ICatService
     ITheCatApiClient theCatApiClient,
     IDownloader downloader)
   {
-    // configuration.ThrowIfNull("Configuration is null");
-
     _catApiClient = theCatApiClient;
     _downloader = downloader;
     _catRepository = catRepository;
     _tagRepository = tagRepository;
 
-    _host = configuration.GetSection("Kestrel:Endpoints:Http:Url").Value;
+    _host = configuration?.GetSection("Kestrel:Endpoints:Http:Url")?.Value ?? throw new ArgumentNullException(nameof(configuration));
   }
 
   /// <summary>
@@ -38,7 +36,7 @@ public class CatService : ICatService
   /// <returns></returns>
   public async Task SaveCats()
   {
-    var cats = await _catApiClient.GetRandomCatImagesAsync();
+    var cats = await _catApiClient.GetRandomCatImagesAsync(25);
     foreach (var c in cats)
     {
       var fileName = $"{Guid.NewGuid()}{Utils.GetFileExtension(c.Url)}";

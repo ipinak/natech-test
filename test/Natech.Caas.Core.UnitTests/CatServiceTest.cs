@@ -24,18 +24,15 @@ public class CatServiceTests
     [SetUp]
     public void Setup()
     {
-        // Mock Configuration
         _mockConfiguration = new Mock<IConfiguration>();
         _mockConfiguration.Setup(config => config.GetSection("Kestrel:Endpoints:Http:Url").Value)
             .Returns(_testHost);
 
-        // Mock Repositories & Services
         _mockCatApiClient = new Mock<ITheCatApiClient>();
         _mockDownloader = new Mock<IDownloader>();
         _mockCatRepository = new Mock<ICatRepository>();
         _mockTagRepository = new Mock<ITagRepository>();
 
-        // Initialize Service
         _SUT = new CatService(
             _mockConfiguration.Object,
             _mockCatRepository.Object,
@@ -64,13 +61,13 @@ public class CatServiceTests
             }
         };
 
-        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync()).ReturnsAsync(fakeCats);
+        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync(It.IsAny<Int32>())).ReturnsAsync(fakeCats);
 
         // Act
         await _SUT.SaveCats();
 
         // Assert
-        _mockCatApiClient.Verify(api => api.GetRandomCatImagesAsync(), Times.Once);
+        _mockCatApiClient.Verify(api => api.GetRandomCatImagesAsync(It.IsAny<Int32>()), Times.Once);
     }
 
     [Test]
@@ -92,7 +89,7 @@ public class CatServiceTests
             }
         };
 
-        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync()).ReturnsAsync(fakeCats);
+        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync(It.IsAny<Int32>())).ReturnsAsync(fakeCats);
 
         // Act
         await _SUT.SaveCats();
@@ -120,7 +117,7 @@ public class CatServiceTests
             }
         };
 
-        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync()).ReturnsAsync(fakeCats);
+        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync(It.IsAny<Int32>())).ReturnsAsync(fakeCats);
 
         // Act
         await _SUT.SaveCats();
@@ -153,7 +150,7 @@ public class CatServiceTests
             new TagEntity { Name = "tag1", Created = DateTime.UtcNow }
         };
 
-        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync()).ReturnsAsync(fakeCats);
+        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync(It.IsAny<Int32>())).ReturnsAsync(fakeCats);
         _mockTagRepository.Setup(repo => repo.AddAll(It.IsAny<IEnumerable<TagEntity>>())).Returns(Task.CompletedTask);
         _mockTagRepository.Setup(repo => repo.List(It.IsAny<List<string>>())).ReturnsAsync(existingTags);
 
@@ -189,7 +186,7 @@ public class CatServiceTests
             new TagEntity { Name = "tag1", Created = DateTime.UtcNow }
         };
 
-        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync()).ReturnsAsync(fakeCats);
+        _mockCatApiClient.Setup(api => api.GetRandomCatImagesAsync(It.IsAny<Int32>())).ReturnsAsync(fakeCats);
         _mockTagRepository.Setup(repo => repo.List(It.IsAny<List<string>>())).ReturnsAsync(existingTags);
 
         // Act
