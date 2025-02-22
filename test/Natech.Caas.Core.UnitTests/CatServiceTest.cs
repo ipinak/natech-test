@@ -11,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Natech.Caas.TheCatApi.Dtos;
 using Natech.Caas.Database.Entities;
 
-[TestFixture]
 public class CatServiceTests
 {
     private Mock<IConfiguration> _mockConfiguration;

@@ -1,6 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Natech.Caas.Shared.Extensions;
 using Natech.Caas.TheCatApi.Dtos;
 using Microsoft.Extensions.Logging;
 
