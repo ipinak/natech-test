@@ -199,4 +199,53 @@ public class CatServiceTests
         _mockCatRepository.Verify(repo =>
             repo.Update(It.Is<CatEntity>(c => c.Tags.Count == 2)), Times.Once);
     }
+
+    [Test]
+    public async Task GetCat_ShouldReturnNull_WhenCatDoesNotExist()
+    {
+        // Arrange
+        _mockCatRepository.Setup(repo => repo.GetByIdAsync(It.IsAny<int>()))
+            .ReturnsAsync((CatEntity)null);
+
+        // Act
+        var result = await _SUT.GetCat(999);
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task GetCat_ShouldReturnCatDto_WhenCatExists()
+    {
+        // Arrange
+        var fakeCat = new CatEntity
+        {
+            Id = 1,
+            CatId = "cat1",
+            Width = 300,
+            Height = 400,
+            Image = "img1.jpg",
+            Created = DateTime.UtcNow,
+            Tags = new List<TagEntity>
+            {
+                new TagEntity() { Id = 1, Name = "tag1" },
+                new TagEntity() { Id = 2, Name = "tag2" }
+            }
+        };
+
+        _mockCatRepository.Setup(repo => repo.GetByIdAsync(1))
+            .ReturnsAsync(fakeCat);
+
+        // Act
+        var result = await _SUT.GetCat(1);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Width, Is.EqualTo(fakeCat.Width));
+        Assert.That(result.ImageUrl, Is.EqualTo(fakeCat.Image));
+        Assert.That(result.Tags, Is.EquivalentTo(new List<string>
+        {
+            "tag1", "tag2"
+        }));
+    }
 }
