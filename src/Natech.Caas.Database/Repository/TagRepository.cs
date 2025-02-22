@@ -3,13 +3,6 @@ using Natech.Caas.Database.Entities;
 
 namespace Natech.Caas.Database.Repository;
 
-public interface ITagRepository
-{
-  Task AddAll(IEnumerable<TagEntity> entities);
-
-  Task<IEnumerable<TagEntity>> List(IEnumerable<string> tags);
-}
-
 public class TagRepository : ITagRepository
 {
   private readonly ApplicationDbContext _dbContext;

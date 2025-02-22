@@ -6,12 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Natech.Caas.TheCatApi.Client;
 
-// TODO: move this ot a separate file
-public interface ITheCatApiClient
-{
-  Task<CatImage[]> GetRandomCatImages();
-}
-
 public class CatApiClient : ITheCatApiClient
 {
   private readonly ILogger<CatApiClient> _logger;
@@ -32,7 +26,7 @@ public class CatApiClient : ITheCatApiClient
   /// Get 
   /// </summary>
   /// <returns></returns>
-  public async Task<CatImage[]> GetRandomCatImages()
+  public async Task<IEnumerable<CatImage>> GetRandomCatImagesAsync()
   {
     try
     {

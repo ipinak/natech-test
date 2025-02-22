@@ -45,7 +45,7 @@ public class CatService : ICatService
   /// <returns></returns>
   public async Task SaveCats()
   {
-    var cats = await _catApiClient.GetRandomCatImages();
+    var cats = await _catApiClient.GetRandomCatImagesAsync();
     foreach (var c in cats)
     {
       var fileName = $"{Guid.NewGuid()}{Utils.GetFileExtension(c.Url)}";

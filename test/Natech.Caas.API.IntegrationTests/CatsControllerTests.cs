@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Natech.Caas.Database;
 using Natech.Caas.Database.Entities;
 using Natech.Caas.Dtos;
+using NUnit.Framework;
 
 public class CatsControllerTests : BaseTest
 {
