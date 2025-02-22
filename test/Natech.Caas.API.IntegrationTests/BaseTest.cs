@@ -10,7 +10,6 @@ public class BaseTest
 {
   protected HttpClient _client;
   protected WebApplicationFactory<Program> _factory;
-  protected const string BASE_URL = "/api";
 
   [SetUp]
   public void SetUp()

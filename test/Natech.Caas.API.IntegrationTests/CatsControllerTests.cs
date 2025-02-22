@@ -14,7 +14,6 @@ using NUnit.Framework;
 
 public class CatsControllerTests : BaseTest
 {
-
     #region List Cats Tests
     [Test]
     public async Task ListCats_ShouldReturnEmptyList_WhenNoCatsExist()
