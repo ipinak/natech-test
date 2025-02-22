@@ -10,88 +10,84 @@ using Natech.Caas.Core.Services;
 using Natech.Caas.Database;
 using Natech.Caas.Database.Repository;
 
-public partial class Program
-{
-    private static void Main(string[] args)
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
-        var builder = WebApplication.CreateBuilder(args);
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-        builder.Services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            });
+builder.Services.AddCatApi(builder.Configuration);
 
-        builder.Services.AddCatApi(builder.Configuration);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddHealthChecks()
+    .AddSqlServer(
+            connectionString: connectionString,
+            healthQuery: "SELECT 1;",
+            name: "sql",
+            failureStatus: HealthStatus.Degraded,
+            tags: new string[] { "db", "sql", "sqlserver" });
 
-        builder.Services.AddHealthChecks()
-            .AddSqlServer(
-                    connectionString: connectionString,
-                    healthQuery: "SELECT 1;",
-                    name: "sql",
-                    failureStatus: HealthStatus.Degraded,
-                    tags: new string[] { "db", "sql", "sqlserver" });
+var isIntegrationTesting = builder.Environment.IsEnvironment(Consts.INTEGRATION_TESTING);
+if (isIntegrationTesting)
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("TestDb"));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
+builder.Services.AddScoped<ICatRepository, CatRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<ICatService, CatService>();
 
-        var isIntegrationTesting = builder.Environment.IsEnvironment(Consts.INTEGRATION_TESTING);
-        if (isIntegrationTesting)
-        {
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase("TestDb"));
-        }
-        else
-        {
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-        }
-        builder.Services.AddScoped<ICatRepository, CatRepository>();
-        builder.Services.AddScoped<ITagRepository, TagRepository>();
-        builder.Services.AddScoped<ICatService, CatService>();
+builder.Services.AddSingleton<IDownloader, ImageDownloadService>(
+    sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
 
-        builder.Services.AddSingleton<IDownloader, ImageDownloadService>(
-            sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
+builder.Services.AddValidators();
 
-        builder.Services.AddValidators();
+var app = builder.Build();
 
-        var app = builder.Build();
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), Consts.DOWNLOADS_FOLDER)),
+    RequestPath = $"/{Consts.DOWNLOADS_FOLDER}",
+});
 
-        app.UseStaticFiles();
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), Consts.DOWNLOADS_FOLDER)),
-            RequestPath = $"/{Consts.DOWNLOADS_FOLDER}",
-        });
+app.UseRouting();
+app.MapControllers();
 
-        app.UseRouting();
-        app.MapControllers();
+app.UseHttpsRedirection();
 
-        app.UseHttpsRedirection();
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Configuration.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
 
-        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-        builder.Configuration.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
-
-        if (!isIntegrationTesting)
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                dbContext.Database.Migrate();
-            }
-        }
-
-        app.MapHealthChecks("/healthz");
-
-        app.Run();
+if (!isIntegrationTesting)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.Migrate();
     }
 }
+
+app.MapHealthChecks("/healthz");
+
+app.Run();
+
+public partial class Program;
