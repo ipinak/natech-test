@@ -14,6 +14,12 @@ using NUnit.Framework;
 
 public class CatsControllerTests : BaseTest
 {
+    private static JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
     #region List Cats Tests
     [Test]
     public async Task ListCats_ShouldReturnEmptyList_WhenNoCatsExist()
@@ -24,11 +30,7 @@ public class CatsControllerTests : BaseTest
         // Assert
         response.EnsureSuccessStatusCode();
         var responsePayload = await response.Content.ReadAsStringAsync();
-        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, jsonSerializerOptions);
 
         Assert.IsNotNull(catResponse);
         Assert.IsEmpty(catResponse.Data);
@@ -59,11 +61,7 @@ public class CatsControllerTests : BaseTest
         // Assert
         response.EnsureSuccessStatusCode();
         var responsePayload = await response.Content.ReadAsStringAsync();
-        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, jsonSerializerOptions);
 
         Assert.IsNotNull(catResponse);
         Assert.IsNotEmpty(catResponse.Data);
@@ -99,11 +97,7 @@ public class CatsControllerTests : BaseTest
         // Assert
         response.EnsureSuccessStatusCode();
         var responsePayload = await response.Content.ReadAsStringAsync();
-        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, jsonSerializerOptions);
 
         Assert.IsNotNull(catResponse);
         Assert.IsNotEmpty(catResponse.Data);
@@ -163,7 +157,8 @@ public class CatsControllerTests : BaseTest
             .RuleFor(c => c.Image, f => f.Internet.Avatar())
             .RuleFor(c => c.Created, f => f.Date.Past())
             .RuleFor(c => c.Tags, f =>
-                new List<TagEntity> {
+                new List<TagEntity>
+                {
                     new TagEntity { Name = availableTags[0], Created = DateTime.UtcNow },
                     new TagEntity { Name = availableTags[1], Created = DateTime.UtcNow }
                 }
@@ -184,25 +179,13 @@ public class CatsControllerTests : BaseTest
         response3.EnsureSuccessStatusCode();
 
         var response1Payload = await response1.Content.ReadAsStringAsync();
-        var catResponse1 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response1Payload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse1 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response1Payload, jsonSerializerOptions);
 
         var response2Payload = await response2.Content.ReadAsStringAsync();
-        var catResponse2 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response2Payload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse2 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response2Payload, jsonSerializerOptions);
 
         var response3Payload = await response3.Content.ReadAsStringAsync();
-        var catResponse3 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response3Payload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse3 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response3Payload, jsonSerializerOptions);
 
         Assert.AreEqual(response2Payload, response1Payload);
         Assert.That(catResponse3.Data.Count(), Is.EqualTo(0));
@@ -242,11 +225,7 @@ public class CatsControllerTests : BaseTest
         response3.EnsureSuccessStatusCode();
 
         var response3Payload = await response3.Content.ReadAsStringAsync();
-        var catResponse3 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response3Payload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse3 = JsonSerializer.Deserialize<ListResponse<CatDto>>(response3Payload, jsonSerializerOptions);
 
         Assert.That(catResponse3.Data.Count(), Is.EqualTo(0));
     }
@@ -285,11 +264,7 @@ public class CatsControllerTests : BaseTest
         response.EnsureSuccessStatusCode();
 
         var responsePayload = await response.Content.ReadAsStringAsync();
-        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse = JsonSerializer.Deserialize<ListResponse<CatDto>>(responsePayload, jsonSerializerOptions);
 
         Assert.That(catResponse.Data.Count(), Is.EqualTo(3));
     }
@@ -323,11 +298,7 @@ public class CatsControllerTests : BaseTest
         response.EnsureSuccessStatusCode();
 
         var responsePayload = await response.Content.ReadAsStringAsync();
-        var catResponse = JsonSerializer.Deserialize<CatDto>(responsePayload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
+        var catResponse = JsonSerializer.Deserialize<CatDto>(responsePayload, jsonSerializerOptions);
 
         Assert.That(catResponse.Id, Is.EqualTo(fakeCats[0].Id));
         Assert.That(catResponse.Width, Is.EqualTo(fakeCats[0].Width));

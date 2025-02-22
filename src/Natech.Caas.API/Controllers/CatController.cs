@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Natech.Caas.API.Request;
 using Natech.Caas.Core.Services;
@@ -10,28 +11,30 @@ namespace Natech.Caas.API.Controllers;
 public class CatController : ControllerBase
 {
   private readonly ICatService _catService;
+  private readonly IBackgroundJobClient _backgroundJobClient;
 
-  public CatController(ICatService catUseCase)
+  public CatController(ICatService catService, IBackgroundJobClient backgroundJobClient)
   {
-    _catService = catUseCase;
+    _catService = catService ?? throw new ArgumentNullException(nameof(catService));
+    _backgroundJobClient = backgroundJobClient ?? throw new ArgumentNullException(nameof(backgroundJobClient));
   }
 
   [HttpPost]
   [Route("fetch")]
   [ProducesResponseType(typeof(string), 200, contentType: "application/text")]
-  [ProducesResponseType(typeof(string), 500, contentType: "application/text")]
+  [ProducesResponseType(typeof(string), 500, contentType: "application/json")]
   public async Task<ActionResult> Fetch()
   {
-    // TODO: run it on the background and return immediately
-    await _catService.SaveCats();
+    // NOTE: runs the job in the background because it's kind of heavy
+    _backgroundJobClient.Enqueue<ICatService>(catService => catService.SaveCats());
     return Ok();
   }
 
   [HttpGet]
   [Route("{id}")]
   [ProducesResponseType(typeof(CatDto), 200, contentType: "application/json")]
-  [ProducesResponseType(typeof(string), 400, contentType: "application/text")]
-  [ProducesResponseType(typeof(string), 500, contentType: "application/text")]
+  [ProducesResponseType(typeof(string), 400, contentType: "application/json")]
+  [ProducesResponseType(typeof(string), 500, contentType: "application/json")]
   public async Task<ActionResult<CatDto>> Get([FromRoute] GetCatRequest request)
   {
     var response = await _catService.GetCat(request.Id);
@@ -45,8 +48,8 @@ public class CatController : ControllerBase
   [HttpGet]
   [Route("")]
   [ProducesResponseType(typeof(IEnumerable<CatDto>), 200, contentType: "application/json")]
-  [ProducesResponseType(typeof(string), 400, contentType: "application/text")]
-  [ProducesResponseType(typeof(string), 500, contentType: "application/text")]
+  [ProducesResponseType(typeof(string), 400, contentType: "application/json")]
+  [ProducesResponseType(typeof(string), 500, contentType: "application/json")]
   public async Task<ActionResult<IEnumerable<CatDto>>> List([FromQuery] ListCatsRequest request)
   {
     var listCatsResponse = await _catService.ListCats(request.Tag, request.Page, request.PageSize);
