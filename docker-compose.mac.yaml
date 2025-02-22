@@ -13,11 +13,12 @@ services:
     volumes:
       - sqlserver_data:/var/opt/mssql
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
+  # In case you need a tool for the database
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
 
   app:
     build: .
