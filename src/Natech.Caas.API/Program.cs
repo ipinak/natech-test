@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Natech.Caas.API;
 using Natech.Caas.API.Extensions;
@@ -28,7 +29,13 @@ public partial class Program
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-        Console.WriteLine($"🔌 Connection String: {connectionString}");
+        builder.Services.AddHealthChecks()
+            .AddSqlServer(
+                    connectionString: connectionString,
+                    healthQuery: "SELECT 1;",
+                    name: "sql",
+                    failureStatus: HealthStatus.Degraded,
+                    tags: new string[] { "db", "sql", "sqlserver" });
 
         var isIntegrationTesting = builder.Environment.IsEnvironment(Consts.INTEGRATION_TESTING);
         if (isIntegrationTesting)
@@ -46,7 +53,8 @@ public partial class Program
         builder.Services.AddScoped<ITagRepository, TagRepository>();
         builder.Services.AddScoped<ICatService, CatService>();
 
-        builder.Services.AddTransient<IDownloader, ImageDownloadService>(sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
+        builder.Services.AddTransient<IDownloader, ImageDownloadService>(
+            sp => new ImageDownloadService(Consts.DOWNLOADS_FOLDER));
 
         builder.Services.AddValidators();
 
@@ -86,5 +94,3 @@ public partial class Program
         app.Run();
     }
 }
-
-public partial class Program { }
