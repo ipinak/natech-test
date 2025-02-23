@@ -60,6 +60,14 @@ builder.Services.AddValidators();
 
 var app = builder.Build();
 
+// Ensure the 'downloads' directory exists on startup otherwise create it
+var downloadsPath = Path.Combine(Consts.DOWNLOADS_FOLDER);
+if (!Directory.Exists(downloadsPath))
+{
+    Directory.CreateDirectory(downloadsPath);
+    Console.WriteLine($"Created directory: {downloadsPath}");
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
