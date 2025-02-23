@@ -36,6 +36,8 @@ controller exists.
 
 Starting the project will execute the already created migrations
 
+> NOTE: you will find in the project 2 docker-compose files, I've worked on this on a mac hence the existence of a second file.
+
 ## Requirements
 
 - docker-compose
