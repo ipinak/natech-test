@@ -13,6 +13,7 @@ services:
     volumes:
       - sqlserver_data:/var/opt/mssql
 
+  # In case you need a tool for the database
   # adminer:
   #   image: adminer
   #   restart: always
